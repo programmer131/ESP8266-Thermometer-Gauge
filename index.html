@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>My first chart using FusionCharts Suite XT</title>
+<script type="text/javascript" src="http://static.fusioncharts.com/code/latest/fusioncharts.js"></script>
+<script type="text/javascript" src="http://static.fusioncharts.com/code/latest/themes/fusioncharts.theme.fint.js?cacheBust=56"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  FusionCharts.ready(function(){
+    var fusioncharts = new FusionCharts({
+    type: 'thermometer',
+    renderAt: 'chart-container',
+    id: 'myThm',
+    width: '240',
+    height: '310',
+    dataFormat: 'json',
+    dataSource: {
+        "chart": {
+            "caption": "Temperature Monitor",
+            "subcaption": " bedroom",
+            "lowerLimit": "-10",
+            "upperLimit": "50",
+
+            "decimals": "1",
+            "numberSuffix": "°C",
+            "showhovereffect": "1",
+            "thmFillColor": "#008ee4",
+            "showGaugeBorder": "1",
+            "gaugeBorderColor": "#008ee4",
+            "gaugeBorderThickness": "1",
+            "gaugeBorderAlpha": "30",
+            "thmOriginX": "100",
+            "chartBottomMargin": "20",
+            "valueFontColor": "#000000",
+            "theme": "fint"
+        },
+        "value": "20",        
+        "annotations": {
+            "showbelow": "0",
+            "groups": [{                
+                "id": "indicator",
+                "items": [                    
+                    {
+                        "id": "background",                        
+                        "type": "rectangle",
+                        "alpha": "50",
+                        "fillColor": "#AABBCC",
+                        "x": "$gaugeEndX-40",
+                        "tox": "$gaugeEndX",
+                        "y": "$gaugeEndY+54",
+                        "toy": "$gaugeEndY+72"
+                    }
+                ]
+            }]
+
+        },
+    },
+    "events": {
+        "initialized": function(evt, arg) {
+            evt.sender.dataUpdate = setInterval(function() {
+             
+			 var someUrl = "/temp";
+					$.ajax({
+						url: someUrl,
+						dataType: "text",
+						success: function(response) {
+							evt.sender.feedData("&value=" + response);
+						},
+						timeout: 2000
+					})				                 
+
+            }, 3000);
+            updateAnnotation = function(evtObj, argObj) {
+                var code,
+                    chartObj = evtObj.sender,
+                    val = chartObj.getData(),
+                    annotations = chartObj.annotations;
+
+                if (val <= 30) {
+                    code = "#00FF00";
+                } else if (val < 40 && val > 30) {
+                    code = "#ff9900";
+                } else {
+                    code = "#ff0000";
+                }
+                annotations.update("background", {
+                    "fillColor": code
+                });
+            };
+        },
+        'renderComplete': function(evt, arg) {
+            updateAnnotation(evt, arg);
+        },
+        'realtimeUpdateComplete': function(evt, arg) {
+            updateAnnotation(evt, arg);
+        },
+        'disposed': function(evt, arg) {
+            clearInterval(evt.sender.dataUpdate);
+        }
+    }
+	}
+	);
+		fusioncharts.render();
+	});
+});
+</script>
+</head>
+<body>
+  <div align="center" id="chart-container">FusionCharts XT will load here!</div>
+</body>
+</html>
